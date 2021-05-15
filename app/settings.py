@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'administrator.apps.AdministratorConfig',
     'core.apps.CoreConfig',
 
+
 ]
 
 MIDDLEWARE = [
