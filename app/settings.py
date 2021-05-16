@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     #Third-party apps
     'rest_framework',
+    'corsheaders',
 
     #My apps
     'administrator.apps.AdministratorConfig',
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -112,9 +114,19 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+#PERMETTE DI FARE LOGIN via API con REEST FRAMEWORK
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
+
+
 
 LANGUAGE_CODE = 'en-us'
 
@@ -139,3 +151,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'core.User'
+
+#CORS
+CORS_ORIGIN_ALLOW_ALL = True #consente al frontend di chiamare le api di backend
+CORS_ALLOW_CREDENTIALS = True #consente di prendere i token/cookies generati dal backend

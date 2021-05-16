@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import exceptions
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -41,8 +42,7 @@ class LoginAPIView(APIView):
         if not user.check_password(password):
             raise exceptions.AuthenticationFailed('Incorrect Password!')
 
-        jwt_authentication = JWTAuthentication()
-        token = jwt_authentication.generate_jwt(user.id)
+        token = JWTAuthentication.generate_jwt(user.id)
 
         response = Response()
         response.set_cookie(key='jwt', value=token, httponly=True)
@@ -50,4 +50,31 @@ class LoginAPIView(APIView):
             'message': 'success'
         }
 
+        return response
+
+
+class UserAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]  # serve che la classe che fa autenticazione metta il token
+
+    def get(self, request):
+        user = request.user
+        data = UserSerializer(user).data
+
+        # if 'api/ambassador' in request.path:
+        #     data['revenue'] = user.revenue
+
+        return Response(data)
+
+
+class LogoutAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, _):
+        response = Response()
+        response.delete_cookie(key='jwt')
+        response.data = {
+            'message': 'success'
+        }
         return response
