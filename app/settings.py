@@ -44,7 +44,10 @@ INSTALLED_APPS = [
 
     #My apps
     'administrator.apps.AdministratorConfig',
+    'ambassador.apps.AmbassadorConfig',
     'core.apps.CoreConfig',
+    
+
 
 
 ]
