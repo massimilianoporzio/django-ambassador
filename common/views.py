@@ -18,7 +18,7 @@ class RegisterAPIView(APIView):
         if data['password'] != data['password_confirm']:
             raise exceptions.APIException('Passwords do not match!')
 
-        data['is_ambassador'] = 0
+        data['is_ambassador'] = 'api/ambassador' in request.path #se chiamo url ambassador sono amabssador
 
         serializer = UserSerializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -42,7 +42,15 @@ class LoginAPIView(APIView):
         if not user.check_password(password):
             raise exceptions.AuthenticationFailed('Incorrect Password!')
 
-        token = JWTAuthentication.generate_jwt(user.id)
+
+        #Gestione dello scope per dire che sto usando un user che è di tipo ambassador / opp admin
+        scope = 'ambassador' if 'api/ambassador' in request.path else 'admin'
+        if user.is_ambassador and scope == 'admin':
+            raise exceptions.AuthenticationFailed('Unauthorized') # SE un ambassador USA le API di admin
+
+        #PASSO LO SCOPE ALLA FUNZIONE CHE MI GENERA IL TOKEN DI AUTENTICAZIONE
+
+        token = JWTAuthentication.generate_jwt(user.id,scope)
 
         response = Response()
         response.set_cookie(key='jwt', value=token, httponly=True)

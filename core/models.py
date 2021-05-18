@@ -51,6 +51,13 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+    
+    def save(self, *args, **kwargs):
+        super(User, self).save()
+        if self.password:
+            self.set_password(self.password)
+            super(User, self).save()
+                        
 
 
 class Product(models.Model):
