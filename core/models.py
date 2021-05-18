@@ -16,7 +16,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.is_admin = False
         user.is_staff = False
-        user.is_ambassador = False
+        user.is_ambassador = False  # registro ambassador solo attraverso l'API ambassador
         user.save(using=self._db)
         return user
 
@@ -51,13 +51,21 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
-    
+
+    @property
+    def name(self):
+        return self.first_name + ' ' + self.last_name
+
+    @property
+    def revenue(self):
+        orders = Order.objects.filter(user_id=self.pk, complete=True)
+        return sum(o.ambassador_revenue for o in orders)
+
     def save(self, *args, **kwargs):
         super(User, self).save()
         if self.password:
             self.set_password(self.password)
             super(User, self).save()
-                        
 
 
 class Product(models.Model):
@@ -80,7 +88,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     code = models.CharField(max_length=255)
     ambassador_email = models.CharField(max_length=255)
-    #INDIRIZZO DI SPEDIZIONE PER L'ORDINE
+    # INDIRIZZO DI SPEDIZIONE PER L'ORDINE
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
@@ -105,6 +113,7 @@ class Order(models.Model):
     def admin_revenue(self):
         items = OrderItem.objects.filter(order_id=self.pk)
         return sum(i.admin_revenue for i in items)
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
