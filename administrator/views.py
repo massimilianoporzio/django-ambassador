@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.shortcuts import render
 
 # Create your views here.
@@ -35,16 +36,31 @@ class ProductGenericAPIView(generics.GenericAPIView,mixins.RetrieveModelMixin,mi
 
         return self.list(request) # LISTA list da ListModelMixin
 
+
     def post(self, request):
         response = self.create(request)
+        for key in cache.keys('*'):
+            if 'products_frontend' in key:
+                cache.delete(key)
+        cache.delete('products_backend')
         return response
 
+
     def put(self, request, pk=None):
-        response = self.partial_update(request, pk) #like a PATCH (DRF non supporta PATCH)
+        response = self.partial_update(request, pk)
+        for key in cache.keys('*'):
+            if 'products_frontend' in key:
+                cache.delete(key)
+        cache.delete('products_backend')
         return response
+
 
     def delete(self, request, pk=None):
         response = self.destroy(request, pk)
+        for key in cache.keys('*'): #la cache della response nelle view contiene il prefisso "products_frontend" ma non sappiamo che stringa viene assegnata.
+            if 'products_frontend' in key:
+                cache.delete(key)
+        cache.delete('products_backend')
         return response
 
 

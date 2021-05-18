@@ -74,6 +74,12 @@ class Product(models.Model):
     image = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
+    def filter_title(self,s):
+        return (s.lower() in self.title.lower())
+
+    def filter_description(self,s):
+        return (s.lower() in self.description.lower())
+
 
 class Link(models.Model):
     code = models.CharField(max_length=255, unique=True)

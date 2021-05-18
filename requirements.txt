@@ -5,3 +5,4 @@ django-mysql==3.11.1
 django-cors-headers==3.7.0
 pyJWT==2.0.1
 faker
+django-redis
