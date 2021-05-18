@@ -7,6 +7,7 @@ from django.shortcuts import render
 # Create your views here.
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django_redis import get_redis_connection
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -110,3 +111,17 @@ class StatsAPIView(APIView):
             'count': len(orders),
             'revenue': sum(o.ambassador_revenue for o in orders)
         }
+
+
+class RankingsAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        con = get_redis_connection("default")
+
+        rankings = con.zrevrangebyscore('rankings', min=0, max=10000, withscores=True)
+        #formatto la response come un dict con chiave il name dell'ambassador e value la sua revenue
+        return Response({
+            r[0].decode("utf-8"): r[1] for r in rankings
+        })
