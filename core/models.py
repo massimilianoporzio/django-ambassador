@@ -61,11 +61,11 @@ class User(AbstractUser):
         orders = Order.objects.filter(user_id=self.pk, complete=True)
         return sum(o.ambassador_revenue for o in orders)
 
-    def save(self, *args, **kwargs):
-        super(User, self).save()
-        if self.password:
-            self.set_password(self.password)
-            super(User, self).save()
+    # def save(self, *args, **kwargs):
+    #     super(User, self).save()
+    #     if self.password:
+    #         self.set_password(self.password)
+    #         super(User, self).save() SERVE SE VOGLIO FARE HASH DELLA PWD DA ADMIN
 
 
 class Product(models.Model):

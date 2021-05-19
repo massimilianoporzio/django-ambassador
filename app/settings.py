@@ -46,8 +46,7 @@ INSTALLED_APPS = [
     'administrator.apps.AdministratorConfig',
     'ambassador.apps.AmbassadorConfig',
     'core.apps.CoreConfig',
-
-
+    'checkout.apps.CheckoutConfig',
 
 
 ]
@@ -167,3 +166,12 @@ AUTH_USER_MODEL = 'core.User'
 #CORS
 CORS_ORIGIN_ALLOW_ALL = True #consente al frontend di chiamare le api di backend
 CORS_ALLOW_CREDENTIALS = True #consente di prendere i token/cookies generati dal backend
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'django'
+EMAIL_HOST_PASSWORD = 'hstjrklrcvlukjkw'
+EMAIL_USE_TLS = True

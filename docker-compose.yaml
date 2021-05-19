@@ -9,6 +9,7 @@ services:
     depends_on:
       - db
       - redis
+      - mailhog_server
 
   db:
     image: mysql:5.7.22
@@ -27,4 +28,23 @@ services:
     image: redis
     ports:
     - 6379:6379
+
+  # MailHog
+  #It can be this service name
+  ####mailhog:
+  #or this one or whatever you want.
+  #This name has to be referenced inside the ".env" file
+  mailhog_server:
+    image: mailhog/mailhog
+    container_name: cont_mailhog_server
+    #this is optional
+    tty: true
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    #this is optional
+    #restart: always
+    restart: on-failure
+
+
 
