@@ -2,6 +2,7 @@ from django.core.cache import cache
 from django.shortcuts import render
 
 # Create your views here.
+from django_redis import get_redis_connection
 from rest_framework import generics, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -19,11 +20,13 @@ class AmbassadorAPIView(APIView):
 
     def get(self, _):
         ambassadors = User.objects.filter(is_ambassador=True)
-        serializer = UserSerializer(ambassadors, many=True) #many perché potrebbe restituire più di un oggetto
+        serializer = UserSerializer(ambassadors, many=True)  # many perché potrebbe restituire più di un oggetto
         return Response(serializer.data)
 
-class ProductGenericAPIView(generics.GenericAPIView,mixins.RetrieveModelMixin,mixins.CreateModelMixin,
-                            mixins.ListModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin): #generics : con operazioni "std" (get_queryset...etc)
+
+class ProductGenericAPIView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                            mixins.ListModelMixin, mixins.UpdateModelMixin,
+                            mixins.DestroyModelMixin):  # generics : con operazioni "std" (get_queryset...etc)
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -31,11 +34,10 @@ class ProductGenericAPIView(generics.GenericAPIView,mixins.RetrieveModelMixin,mi
     serializer_class = ProductSerializer
 
     def get(self, request, pk=None):
-        if pk: #DETAIL (ho l'id nella GET)
-            return self.retrieve(request, pk) #retrive da RetrieveModelMixin
+        if pk:  # DETAIL (ho l'id nella GET)
+            return self.retrieve(request, pk)  # retrive da RetrieveModelMixin
 
-        return self.list(request) # LISTA list da ListModelMixin
-
+        return self.list(request)  # LISTA list da ListModelMixin
 
     def post(self, request):
         response = self.create(request)
@@ -45,7 +47,6 @@ class ProductGenericAPIView(generics.GenericAPIView,mixins.RetrieveModelMixin,mi
         cache.delete('products_backend')
         return response
 
-
     def put(self, request, pk=None):
         response = self.partial_update(request, pk)
         for key in cache.keys('*'):
@@ -54,10 +55,10 @@ class ProductGenericAPIView(generics.GenericAPIView,mixins.RetrieveModelMixin,mi
         cache.delete('products_backend')
         return response
 
-
     def delete(self, request, pk=None):
         response = self.destroy(request, pk)
-        for key in cache.keys('*'): #la cache della response nelle view contiene il prefisso "products_frontend" ma non sappiamo che stringa viene assegnata.
+        for key in cache.keys(
+                '*'):  # la cache della response nelle view contiene il prefisso "products_frontend" ma non sappiamo che stringa viene assegnata.
             if 'products_frontend' in key:
                 cache.delete(key)
         cache.delete('products_backend')
@@ -83,3 +84,21 @@ class OrderAPIView(APIView):
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
+
+class StatsAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request,user_id = None):
+        links = Link.objects.filter(user_id=user_id)
+
+        return Response([self.format(link) for link in links])
+
+    def format(self, link):
+        orders = Order.objects.filter(code=link.code, complete=1)
+
+        return {
+            'code': link.code,
+            'count': len(orders),
+            'revenue': sum(o.ambassador_revenue for o in orders)
+        }
